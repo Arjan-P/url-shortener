@@ -1,4 +1,5 @@
 import pino from "pino";
+import { trace } from "@opentelemetry/api";
 import { PinoLoggerOptions } from "fastify/types/logger.js";
 import { env } from "./env/env.js";
 
@@ -25,6 +26,12 @@ export const loggerConfig: PinoLoggerOptions = {
       return { level: label };
     },
     // TODO: after observability setup: Inject traceId + spanId into every log line
+    log(obj) {
+      const span = trace.getActiveSpan();
+      if (!span) return obj;
+      const { traceId, spanId } = span.spanContext();
+      return { ...obj, traceId, spanId };
+    },
   },
 
   redact: ["req.headers.authorization", "SESSION_SECRET"],
