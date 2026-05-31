@@ -24,6 +24,20 @@ export const routes: FastifyPluginAsync = async (fastify) => {
       },
     },
     async (req, reply) => {
+      const existing = await req.server.prisma.urls.findUnique({
+        where: {
+          long_url: req.body.url,
+        },
+      });
+
+      if (existing) {
+        return reply.code(201).send(
+          ok({
+            url: `${req.protocol}://${req.headers.host}/${existing.code}`,
+          }),
+        );
+      }
+
       const shortCode = nanoid(7);
       const created = await req.server.prisma.urls.create({
         data: {
@@ -33,10 +47,9 @@ export const routes: FastifyPluginAsync = async (fastify) => {
         },
       });
 
-      const shortUrl = `${req.protocol}://${req.headers.host}/${created.code}`;
       return reply.code(201).send(
         ok({
-          url: shortUrl,
+          url: `${req.protocol}://${req.headers.host}/${created.code}`,
         }),
       );
     },

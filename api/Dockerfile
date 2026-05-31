@@ -34,4 +34,8 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 EXPOSE 5000
 
+COPY api/entrypoint.sh ./
+RUN chmod +x entrypoint.sh
+ENTRYPOINT ["./entrypoint.sh"]
+
 CMD ["node", "--import=./dist/instrumentation.js", "./dist/start.js"]
