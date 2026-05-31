@@ -9,100 +9,486 @@
   "panels": [
     {
       "id": 1,
-      "title": "Request Rate (req/s)",
-      "type": "timeseries",
-      "gridPos": { "x": 0, "y": 0, "w": 8, "h": 8 },
+      "title": "Total Requests",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "unit": "short" }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
       "targets": [
         {
-          "expr": "sum(rate(http_request_duration_seconds_count{job=\"api\"}[1m])) by (method, route)",
-          "legendFormat": "{{method}} {{route}}"
+          "expr": "sum(http_request_duration_seconds_count{job=\"api\"})",
+          "legendFormat": "Total"
         }
       ]
     },
     {
       "id": 2,
-      "title": "Error Rate (%)",
-      "type": "timeseries",
-      "gridPos": { "x": 8, "y": 0, "w": 8, "h": 8 },
+      "title": "Avg Latency",
+      "type": "stat",
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": { "unit": "s" }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
       "targets": [
         {
-          "expr": "sum(rate(http_request_duration_seconds_count{job=\"api\",statusCode=~\"5..\"}[1m])) / sum(rate(http_request_duration_seconds_count{job=\"api\"}[1m])) * 100",
-          "legendFormat": "5xx error rate"
+          "expr": "sum(rate(http_request_duration_seconds_sum{job=\"api\"}[5m])) / sum(rate(http_request_duration_seconds_count{job=\"api\"}[5m]))",
+          "legendFormat": "avg"
         }
       ]
     },
     {
       "id": 3,
-      "title": "P95 Latency (s)",
-      "type": "timeseries",
-      "gridPos": { "x": 16, "y": 0, "w": 8, "h": 8 },
+      "title": "P95 Latency",
+      "type": "stat",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.5 },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"api\"}[1m])) by (le, route))",
-          "legendFormat": "p95 {{route}}"
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"api\"}[5m])) by (le))",
+          "legendFormat": "p95"
         }
       ]
     },
     {
       "id": 4,
-      "title": "Requests by Status Code",
-      "type": "timeseries",
-      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "title": "Heap Utilization",
+      "type": "stat",
+      "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 70 },
+              { "color": "red", "value": 85 }
+            ]
+          }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
       "targets": [
         {
-          "expr": "sum(rate(http_request_duration_seconds_count{job=\"api\"}[1m])) by (statusCode)",
-          "legendFormat": "{{statusCode}}"
+          "expr": "(nodejs_heap_size_used_bytes{job=\"api\"} / nodejs_heap_size_total_bytes{job=\"api\"}) * 100",
+          "legendFormat": "heap %"
         }
       ]
     },
     {
       "id": 5,
-      "title": "Node.js Heap Used",
-      "type": "timeseries",
-      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+      "title": "Event Loop Lag",
+      "type": "stat",
+      "gridPos": { "x": 16, "y": 0, "w": 8, "h": 4 },
       "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.05 },
+              { "color": "red", "value": 0.1 }
+            ]
+          }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "targets": [
+        {
+          "expr": "nodejs_eventloop_lag_seconds{job=\"api\"}",
+          "legendFormat": "lag"
+        }
+      ]
+    },
+
+    {
+      "id": 100,
+      "title": "HTTP TRAFFIC",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 4, "w": 24, "h": 1 }
+    },
+
+    {
+      "id": 6,
+      "title": "Request Rate (req/s)",
+      "description": "Requests per second by method, route, and status code",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 5, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "min": 0,
+          "custom": { "lineWidth": 2, "fillOpacity": 8 }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_request_duration_seconds_count{job=\"api\"}[1m])) by (method, route, status_code)",
+          "legendFormat": "{{method}} {{route}} {{status_code}}"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Error Rate (%)",
+      "description": "Percentage of 4xx and 5xx responses",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 5, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": { "lineWidth": 2, "fillOpacity": 8 }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_request_duration_seconds_count{job=\"api\", status_code=~\"4..\"}[1m])) / sum(rate(http_request_duration_seconds_count{job=\"api\"}[1m])) * 100",
+          "legendFormat": "4xx"
+        },
+        {
+          "expr": "sum(rate(http_request_duration_seconds_count{job=\"api\", status_code=~\"5..\"}[1m])) / sum(rate(http_request_duration_seconds_count{job=\"api\"}[1m])) * 100",
+          "legendFormat": "5xx"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Requests by Route",
+      "description": "Rate per route",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 13, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "min": 0,
+          "custom": { "lineWidth": 2, "fillOpacity": 8 }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_request_duration_seconds_count{job=\"api\"}[1m])) by (route)",
+          "legendFormat": "{{route}}"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Requests by Status Code",
+      "description": "Traffic split by HTTP status code",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 13, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "min": 0,
+          "custom": { "lineWidth": 2, "fillOpacity": 8 }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_request_duration_seconds_count{job=\"api\"}[1m])) by (status_code)",
+          "legendFormat": "{{status_code}}"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "P50 Latency by Route",
+      "description": "Median request latency per route",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 21, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "min": 0,
+          "custom": { "lineWidth": 2, "fillOpacity": 8 }
+        }
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum by (route, le) (rate(http_request_duration_seconds_bucket{job=\"api\"}[5m])))",
+          "legendFormat": "p50 {{route}}"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "P90 Latency by Route",
+      "type": "timeseries",
+      "gridPos": { "x": 8, "y": 21, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "min": 0,
+          "custom": { "lineWidth": 2, "fillOpacity": 8 }
+        }
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.90, sum by (route, le) (rate(http_request_duration_seconds_bucket{job=\"api\"}[5m])))",
+          "legendFormat": "p90 {{route}}"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "P99 Latency by Route",
+      "type": "timeseries",
+      "gridPos": { "x": 16, "y": 21, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "min": 0,
+          "custom": { "lineWidth": 2, "fillOpacity": 8 },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 2 }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, sum by (route, le) (rate(http_request_duration_seconds_bucket{job=\"api\"}[5m])))",
+          "legendFormat": "p99 {{route}}"
+        }
+      ]
+    },
+
+    {
+      "id": 101,
+      "title": "PROCESS / RUNTIME",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 29, "w": 24, "h": 1 }
+    },
+
+    {
+      "id": 13,
+      "title": "Heap Usage",
+      "description": "Heap used vs total — watch for used approaching total",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 30, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "min": 0,
+          "custom": { "lineWidth": 2, "fillOpacity": 8 }
+        }
+      },
       "targets": [
         {
           "expr": "nodejs_heap_size_used_bytes{job=\"api\"}",
-          "legendFormat": "heap used"
+          "legendFormat": "used"
         },
         {
           "expr": "nodejs_heap_size_total_bytes{job=\"api\"}",
-          "legendFormat": "heap total"
+          "legendFormat": "total"
         }
-      ],
-      "fieldConfig": {
-        "defaults": { "unit": "bytes" }
-      }
+      ]
     },
     {
-      "id": 6,
-      "title": "API Logs",
+      "id": 14,
+      "title": "Event Loop Delay",
+      "description": "p50 / p90 / p99 event loop lag over time",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 30, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "min": 0,
+          "custom": { "lineWidth": 2, "fillOpacity": 8 }
+        }
+      },
+      "targets": [
+        {
+          "expr": "nodejs_eventloop_lag_p50_seconds{job=\"api\"}",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "nodejs_eventloop_lag_p90_seconds{job=\"api\"}",
+          "legendFormat": "p90"
+        },
+        {
+          "expr": "nodejs_eventloop_lag_p99_seconds{job=\"api\"}",
+          "legendFormat": "p99"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "title": "Active Handles",
+      "description": "Open libuv handles — sockets, servers, etc.",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 38, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "custom": { "lineWidth": 2, "fillOpacity": 8 }
+        }
+      },
+      "targets": [
+        {
+          "expr": "nodejs_active_handles{job=\"api\"}",
+          "legendFormat": "{{type}}"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "title": "CPU Usage",
+      "description": "Rate of CPU time (user + system)",
+      "type": "timeseries",
+      "gridPos": { "x": 8, "y": 38, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "custom": { "lineWidth": 2, "fillOpacity": 8 }
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(process_cpu_user_seconds_total{job=\"api\"}[1m])",
+          "legendFormat": "user"
+        },
+        {
+          "expr": "rate(process_cpu_system_seconds_total{job=\"api\"}[1m])",
+          "legendFormat": "system"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "title": "Memory",
+      "description": "RSS vs virtual memory",
+      "type": "timeseries",
+      "gridPos": { "x": 16, "y": 38, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "min": 0,
+          "custom": { "lineWidth": 2, "fillOpacity": 8 }
+        }
+      },
+      "targets": [
+        {
+          "expr": "process_resident_memory_bytes{job=\"api\"}",
+          "legendFormat": "RSS"
+        },
+        {
+          "expr": "process_virtual_memory_bytes{job=\"api\"}",
+          "legendFormat": "virtual"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "title": "GC Duration",
+      "description": "Time spent in garbage collection by kind",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 46, "w": 24, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "min": 0,
+          "custom": { "lineWidth": 2, "fillOpacity": 8 }
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(nodejs_gc_duration_seconds_sum{job=\"api\"}[1m])",
+          "legendFormat": "{{kind}}"
+        }
+      ]
+    },
+
+    {
+      "id": 102,
+      "title": "LOGS",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 54, "w": 24, "h": 1 }
+    },
+
+    {
+      "id": 19,
+      "title": "Logs",
+      "description": "Structured logs from the API container",
       "type": "logs",
-      "gridPos": { "x": 0, "y": 16, "w": 24, "h": 10 },
+      "gridPos": { "x": 0, "y": 55, "w": 24, "h": 10 },
       "datasource": { "type": "loki", "uid": "loki" },
+      "options": {
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true,
+        "enableLogDetails": true,
+        "prettifyLogMessage": false
+      },
       "targets": [
         {
           "expr": "{service=\"api\"} | json",
           "legendFormat": ""
         }
-      ],
-      "options": {
-        "showTime": true,
-        "sortOrder": "Descending",
-        "wrapLogMessage": true,
-        "enableLogDetails": true
-      }
+      ]
     },
+
     {
-      "id": 7,
+      "id": 103,
+      "title": "TRACES",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": { "x": 0, "y": 65, "w": 24, "h": 1 }
+    },
+
+    {
+      "id": 20,
       "title": "Traces",
+      "description": "Recent traces from the backend service",
       "type": "traces",
-      "gridPos": { "x": 0, "y": 26, "w": 24, "h": 10 },
+      "gridPos": { "x": 0, "y": 66, "w": 24, "h": 10 },
       "datasource": { "type": "tempo", "uid": "tempo" },
       "targets": [
         {
@@ -112,7 +498,7 @@
               "id": "service-name",
               "tag": "service.name",
               "operator": "=",
-              "value": ["backend"],
+              "value": ["\"backend\""],
               "scope": "resource"
             }
           ]
