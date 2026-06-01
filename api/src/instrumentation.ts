@@ -7,6 +7,7 @@ import {
   ATTR_SERVICE_VERSION,
 } from "@opentelemetry/semantic-conventions";
 import { FastifyOtelInstrumentation } from "@fastify/otel";
+
 import { env } from "./config/env/env.js";
 
 const resource = resourceFromAttributes({

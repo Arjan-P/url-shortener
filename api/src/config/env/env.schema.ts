@@ -10,5 +10,7 @@ export const envSchema = z.object({
     .enum(["fatal", "error", "warn", "info", "debug", "trace"])
     .default("info"),
 
+  DATABASE_URL: z.string(),
+
   OTEL_EXPORTER_OTLP_ENDPOINT: z.url(),
 });
