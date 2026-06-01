@@ -7,7 +7,7 @@ import { ok } from "../lib/response.js";
 import { UrlRepository } from "../repositories/url.repositories.js";
 
 export const routes: FastifyPluginAsync = async (fastify) => {
-  const repo = new UrlRepository(fastify.db);
+  const repo = new UrlRepository(fastify.pg);
   const app = fastify.withTypeProvider<ZodTypeProvider>();
   app.post(
     "/shorten",
