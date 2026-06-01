@@ -1,4 +1,5 @@
 import http from "k6/http";
+import { check } from "k6";
 
 const BASE_URL = "http://localhost:5000";
 
@@ -46,7 +47,7 @@ export function setup() {
 
 export function redirects(data) {
   const url = data.urls[Math.floor(Math.random() * data.urls.length)];
-  res = http.get(url, {
+  const res = http.get(url, {
     redirects: 0,
   });
 
@@ -56,15 +57,17 @@ export function redirects(data) {
 }
 
 export function creates() {
-  http.post(
-    `${BASE_URL}/shorten`,
-    JSON.stringify({
-      url: `https://test.com/${__VU}/${__ITER}`,
-    }),
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
+  const payload = JSON.stringify({
+    url: `https://example.com/${__VU}/${__ITER}`,
+  });
+
+  const res = http.post(`${BASE_URL}/shorten`, payload, {
+    headers: {
+      "Content-Type": "application/json",
     },
-  );
+  });
+
+  check(res, {
+    "status is 201": (r) => r.status === 201,
+  });
 }

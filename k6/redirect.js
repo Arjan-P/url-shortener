@@ -1,4 +1,5 @@
 import http from "k6/http";
+import { check } from "k6";
 
 const BASE_URL = "http://localhost:5000";
 
@@ -33,7 +34,7 @@ export function setup() {
 
 export default function (data) {
   const url = data.urls[Math.floor(Math.random() * data.urls.length)];
-  res = http.get(url, {
+  const res = http.get(url, {
     redirects: 0,
   });
 
