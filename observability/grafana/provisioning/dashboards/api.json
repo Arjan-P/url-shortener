@@ -469,7 +469,7 @@
       },
       "targets": [
         {
-          "expr": "{service=\"api\"} | json",
+          "expr": "{service_name=\"infra-api-1\"} | json",
           "legendFormat": ""
         }
       ]
@@ -487,9 +487,45 @@
       "id": 20,
       "title": "Traces",
       "description": "Recent traces from the backend service",
-      "type": "traces",
+      "type": "table",
       "gridPos": { "x": 0, "y": 66, "w": 24, "h": 10 },
       "datasource": { "type": "tempo", "uid": "tempo" },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": ["sum"],
+          "countRows": false,
+          "fields": ""
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              },
+              {
+                "value": 80,
+                "color": "red"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
       "targets": [
         {
           "queryType": "traceqlSearch",
@@ -498,8 +534,9 @@
               "id": "service-name",
               "tag": "service.name",
               "operator": "=",
-              "value": ["\"backend\""],
-              "scope": "resource"
+              "scope": "resource",
+              "value": ["backend"],
+              "valueType": "string"
             }
           ]
         }
