@@ -1,7 +1,7 @@
 import http from "k6/http";
 import { check } from "k6";
 
-const BASE_URL = "http://localhost:5000";
+const BASE_URL = "http://localhost:80";
 
 export const options = {
   scenarios: {
