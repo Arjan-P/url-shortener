@@ -444,13 +444,607 @@
         }
       ]
     },
+    {
+      "id": 104,
+      "title": "POSTGRES",
+      "type": "row",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 54,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "id": 21,
+      "title": "Active Connections",
+      "description": "Current connections to url_shortener_db by state",
+      "type": "stat",
+      "gridPos": {
+        "x": 0,
+        "y": 55,
+        "w": 4,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 7
+              },
+              {
+                "color": "red",
+                "value": 9
+              }
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"]
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(pg_stat_activity_count{datname=\"url_shortener_db\", state=\"active\"})",
+          "legendFormat": "active"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "title": "Idle Connections",
+      "description": "Idle connections — high idle count wastes resources",
+      "type": "stat",
+      "gridPos": {
+        "x": 4,
+        "y": 55,
+        "w": 4,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"]
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(pg_stat_activity_count{datname=\"url_shortener_db\", state=\"idle\"})",
+          "legendFormat": "idle"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "title": "Idle in Transaction",
+      "description": "Connections stuck in open transactions — should be near 0",
+      "type": "stat",
+      "gridPos": {
+        "x": 8,
+        "y": 55,
+        "w": 4,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"]
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(pg_stat_activity_count{datname=\"url_shortener_db\", state=\"idle in transaction\"})",
+          "legendFormat": "idle in tx"
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "title": "DB Size",
+      "description": "Total disk space used by url_shortener_db",
+      "type": "stat",
+      "gridPos": {
+        "x": 12,
+        "y": 55,
+        "w": 4,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"]
+        }
+      },
+      "targets": [
+        {
+          "expr": "pg_database_size_bytes{datname=\"url_shortener_db\"}",
+          "legendFormat": "size"
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "title": "Deadlocks",
+      "description": "Cumulative deadlocks — any non-zero rate is a problem",
+      "type": "stat",
+      "gridPos": {
+        "x": 16,
+        "y": 55,
+        "w": 4,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"]
+        }
+      },
+      "targets": [
+        {
+          "expr": "pg_stat_database_deadlocks{datname=\"url_shortener_db\"}",
+          "legendFormat": "deadlocks"
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "title": "Rollbacks",
+      "description": "Cumulative transaction rollbacks",
+      "type": "stat",
+      "gridPos": {
+        "x": 20,
+        "y": 55,
+        "w": 4,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        }
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": ["lastNotNull"]
+        }
+      },
+      "targets": [
+        {
+          "expr": "pg_stat_database_xact_rollback{datname=\"url_shortener_db\"}",
+          "legendFormat": "rollbacks"
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "title": "Connections by State",
+      "description": "Active vs idle connections over time — pool exhaustion = active pegged at max",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 59,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "pg_stat_activity_count{datname=\"url_shortener_db\", state=\"active\"}",
+          "legendFormat": "active"
+        },
+        {
+          "expr": "pg_stat_activity_count{datname=\"url_shortener_db\", state=\"idle\"}",
+          "legendFormat": "idle"
+        },
+        {
+          "expr": "pg_stat_activity_count{datname=\"url_shortener_db\", state=\"idle in transaction\"}",
+          "legendFormat": "idle in transaction"
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "title": "Transaction Rate",
+      "description": "Commits and rollbacks per second",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 12,
+        "y": 59,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "min": 0,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(pg_stat_database_xact_commit{datname=\"url_shortener_db\"}[1m])",
+          "legendFormat": "commits/s"
+        },
+        {
+          "expr": "rate(pg_stat_database_xact_rollback{datname=\"url_shortener_db\"}[1m])",
+          "legendFormat": "rollbacks/s"
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "title": "Cache Hit Rate",
+      "description": "Ratio of buffer hits to total reads — should be >99% in healthy systems",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 67,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.95
+              },
+              {
+                "color": "green",
+                "value": 0.99
+              }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(pg_stat_database_blks_hit{datname=\"url_shortener_db\"}[1m]) / (rate(pg_stat_database_blks_hit{datname=\"url_shortener_db\"}[1m]) + rate(pg_stat_database_blks_read{datname=\"url_shortener_db\"}[1m]))",
+          "legendFormat": "cache hit rate"
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "title": "Rows Fetched vs Returned",
+      "description": "Returned = scanned, Fetched = actually used. Large gap = inefficient queries / missing indexes",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 12,
+        "y": 67,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "rps",
+          "min": 0,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(pg_stat_database_tup_returned{datname=\"url_shortener_db\"}[1m])",
+          "legendFormat": "rows scanned/s"
+        },
+        {
+          "expr": "rate(pg_stat_database_tup_fetched{datname=\"url_shortener_db\"}[1m])",
+          "legendFormat": "rows fetched/s"
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "title": "urls Table — Seq Scans vs Index Scans",
+      "description": "Sequential scans on urls are expensive — should be using index scans via code/long_url columns",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 75,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "min": 0,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(pg_stat_user_tables_seq_scan{relname=\"urls\"}[1m])",
+          "legendFormat": "seq scans/s"
+        },
+        {
+          "expr": "rate(pg_stat_user_tables_idx_scan{relname=\"urls\"}[1m])",
+          "legendFormat": "index scans/s"
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "title": "urls Table — Row Activity",
+      "description": "Inserts, updates, deletes on the urls table",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 12,
+        "y": 75,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "rps",
+          "min": 0,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(pg_stat_user_tables_n_tup_ins{relname=\"urls\"}[1m])",
+          "legendFormat": "inserts/s"
+        },
+        {
+          "expr": "rate(pg_stat_user_tables_n_tup_upd{relname=\"urls\"}[1m])",
+          "legendFormat": "updates/s"
+        },
+        {
+          "expr": "rate(pg_stat_user_tables_n_tup_del{relname=\"urls\"}[1m])",
+          "legendFormat": "deletes/s"
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "title": "urls Table — Dead Tuples",
+      "description": "Dead rows pending vacuum — high values bloat the table and slow scans",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 0,
+        "y": 83,
+        "w": 8,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "pg_stat_user_tables_n_dead_tup{relname=\"urls\"}",
+          "legendFormat": "dead tuples"
+        },
+        {
+          "expr": "pg_stat_user_tables_n_live_tup{relname=\"urls\"}",
+          "legendFormat": "live tuples"
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "title": "Locks",
+      "description": "Lock counts on url_shortener_db by mode — rowexclusivelock is normal for writes",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 8,
+        "y": 83,
+        "w": 8,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "pg_locks_count{datname=\"url_shortener_db\"}",
+          "legendFormat": "{{mode}}"
+        }
+      ]
+    },
+    {
+      "id": 35,
+      "title": "Checkpoint Activity",
+      "description": "Scheduled vs requested checkpoints — too many requested checkpoints = WAL pressure",
+      "type": "timeseries",
+      "gridPos": {
+        "x": 16,
+        "y": 83,
+        "w": 8,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 8
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(pg_stat_bgwriter_checkpoints_timed_total[5m])",
+          "legendFormat": "timed/s"
+        },
+        {
+          "expr": "rate(pg_stat_bgwriter_checkpoints_req_total[5m])",
+          "legendFormat": "requested/s"
+        }
+      ]
+    },
 
     {
       "id": 102,
       "title": "LOGS",
       "type": "row",
       "collapsed": false,
-      "gridPos": { "x": 0, "y": 54, "w": 24, "h": 1 }
+      "gridPos": {
+        "x": 0,
+        "y": 146,
+        "w": 24,
+        "h": 1
+      }
     },
 
     {
@@ -458,7 +1052,13 @@
       "title": "Logs",
       "description": "Structured logs from the API container",
       "type": "logs",
-      "gridPos": { "x": 0, "y": 55, "w": 24, "h": 10 },
+      "gridPos": {
+        "x": 0,
+        "y": 147,
+        "w": 24,
+        "h": 10
+      },
+
       "datasource": { "type": "loki", "uid": "loki" },
       "options": {
         "showTime": true,
@@ -480,7 +1080,12 @@
       "title": "TRACES",
       "type": "row",
       "collapsed": false,
-      "gridPos": { "x": 0, "y": 65, "w": 24, "h": 1 }
+      "gridPos": {
+        "x": 0,
+        "y": 157,
+        "w": 24,
+        "h": 1
+      }
     },
 
     {
@@ -488,7 +1093,13 @@
       "title": "Traces",
       "description": "Recent traces from the backend service",
       "type": "table",
-      "gridPos": { "x": 0, "y": 66, "w": 24, "h": 10 },
+      "gridPos": {
+        "x": 0,
+        "y": 158,
+        "w": 24,
+        "h": 10
+      },
+
       "datasource": { "type": "tempo", "uid": "tempo" },
       "options": {
         "showHeader": true,
