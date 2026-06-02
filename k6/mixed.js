@@ -7,14 +7,14 @@ export const options = {
   scenarios: {
     redirects: {
       executor: "constant-vus",
-      vus: 190,
+      vus: 300,
       duration: "2m",
       exec: "redirects",
     },
 
     creates: {
       executor: "constant-vus",
-      vus: 10,
+      vus: 30,
       duration: "2m",
       exec: "creates",
     },
